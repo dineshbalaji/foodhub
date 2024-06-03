@@ -20,9 +20,8 @@ router.post('/register', async(req:Request<any>, res:Response, next:NextFunction
 
 router.post('/login', async(req:Request, res:Response, next:NextFunction) => {
     try {
-        //const { userName, password } = req.body;
-  //      const token = await userCtrl.tokenCreation({ userName, password});
-        const token:String = 'dfgd'
+        const { userName, password } = req.body;
+        const token:String = await userCtrl.createUserSession({ userName, password} as User);
         res.locals.success = new SuccessResponse('User Verified', { token });
         next();
     } catch(err) {

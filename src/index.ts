@@ -3,6 +3,8 @@ import path from 'path';
 import cookieParser from 'cookie-parser';
 import logger from 'morgan';
 import UserRouter from './components/user/user-route';
+import { UserEntity } from './components/user/user-entity';
+import { AuthRequest, verifyUserToken } from './lib/jwt-auth';
 
 const app = express();
 app.use(logger('dev'));
@@ -11,7 +13,9 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+
 app.use('/user', UserRouter);
+app.use('/menu', verifyUserToken(new UserEntity()), function(req:AuthRequest, res:Response) {});
 
 app.get('/', function(req:Request, res:Response) {
     res.send('<p>Healthy</p>');

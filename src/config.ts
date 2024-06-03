@@ -8,3 +8,15 @@ export const DynamoDBConfig = {
         secretAccessKey: AWS_DB_SECRETKEY
     }
 };
+export const appConfig = {
+    get port():number {
+        return (Number(process.env.PORT) || 3000)
+    },
+    get sessionExpireMin():number {
+        return (Number(process.env.SESSION_EXPIRE_MIN) || 15)
+    },
+    get jwtSecret():string {
+        if(!process.env.JWT_SECRET) { throw 'JWT token must to be define in ENV_VAR'}
+        return String(process.env.JWT_SECRET);
+    } 
+}

@@ -1,4 +1,4 @@
-import { GetItemCommand, GetItemCommandOutput, PutItemCommand } from "@aws-sdk/client-dynamodb";
+import { GetItemCommand, GetItemCommandOutput, PutItemCommand, PutItemCommandOutput } from "@aws-sdk/client-dynamodb";
 import { dynamoDB } from "../../lib/dynamo-client";
 import { randomBytes } from 'crypto';
 import logger from "../../lib/logger";
@@ -6,28 +6,21 @@ import Joi from 'joi';
 import { ErrorResponse } from "../../lib/response-messages";
 
 
+const verifyAndThrowStatusError = (response: PutItemCommandOutput | GetItemCommandOutput) => {
+  if (response.$metadata.httpStatusCode !== 200) {
+    throw 'Http status code has failure';
+  }
+}
+const logExpection = (message:string, e?:any) => {
+  logger.error(message, e);
+  return message;
+}
 
 abstract class FoodHubModal {
-  private tableName:string = 'FoodHub';
-
-  private hashKey!: string;
-  private rangeKey!: string;
-  private entityType!:string;
-  
-
-
-  private generateId(prefix:string): string {
-    const randomNumber = randomBytes(3).toString('hex');
-    return `${prefix}${randomNumber}`;
-  }
-
-  protected constructor(prefix: string, entityType: string, sk?: string, pk?: string) {
-    const id: string = this.generateId(prefix);
-    this.hashKey = pk || id;
-    this.rangeKey = sk || id;
-    this.entityType = entityType;
-    return this;
-  }
+  private tableName: string = 'FoodHub';
+  protected abstract entityType: string;
+  protected abstract hashKey: string;
+  protected abstract rangeKey: string;
 
   protected getAttributeMap(items: any = {}): any {
     return {
@@ -35,7 +28,7 @@ abstract class FoodHubModal {
       Item: {
         PK: { S: this.hashKey },
         SK: { S: this.rangeKey },
-        EntityType: { S: this.entityType },
+        ENTITYTYPE: { S: this.entityType },
         ...items
       }
     }
@@ -44,10 +37,15 @@ abstract class FoodHubModal {
     return {
       TableName: this.tableName,
       Key: {
-        PK: { S: this.hashKey},
-        SK: { S: this.rangeKey}
+        PK: { S: this.hashKey },
+        SK: { S: this.rangeKey }
       }
     }
+  }
+
+  protected generateId(prefix: string): string {
+    const randomNumber = randomBytes(3).toString('hex');
+    return `${prefix}${randomNumber}`;
   }
 }
 
@@ -56,7 +54,7 @@ export class User {
   password!: string;
   firstName!: string;
   sessionId?: string;
-  [key:string]:any
+  [key: string]: any
 
   private static schema = Joi.object({
     userName: Joi.string().min(3).max(15).regex(/^[a-zA-Z0-9._-]+$/).required(),
@@ -76,74 +74,94 @@ export class User {
 
 
 class UserModal extends FoodHubModal {
-  private static prefix: string = 'user#'
-  private static entityType: string = 'User'
-  private static getUserIdByName(name: string): string {
-    return UserModal.prefix + name;
-  }
+  private prefix: string = 'user#'
+
+  protected entityType: string = 'UserInfo'
+  protected hashKey: string;
+  protected rangeKey: string;
 
   private userName!: string;
 
-  constructor( userName:string ) {
-
-    const { prefix, entityType, getUserIdByName } = UserModal;
-    const userId = getUserIdByName(userName);
-    super(prefix,entityType,userId, userId);
-    this.userName = userName;
+  constructor(userName: string) {
+    super();
+    this.hashKey = this.prefix + userName;
+    this.rangeKey = this.prefix + userName;
   }
-  
-  private fieldType = new Map([
-    ['userName','S'],
-    ['password','S'],
-    ['firstName','S']
-  ]);
-  
-  public override getAttributeMap(user: User): any {
-    const attributes:any = {USERNAME: { S: this.userName }};
 
-    for( let field in user) {
+  private fieldType = new Map([
+    ['userName', 'S'],
+    ['password', 'S'],
+    ['firstName', 'S']
+  ]);
+
+  public override getAttributeMap(user: User): any {
+    const attributes: any = { USERNAME: { S: this.userName } };
+
+    for (let field in user) {
       const attrName = field.toUpperCase();
-      const attrType:string | undefined = this.fieldType.get(field);
+      const attrType: string | undefined = this.fieldType.get(field);
       attrType && (attributes[attrName] = { [attrType]: user[field] });
     }
     return super.getAttributeMap(attributes);
   }
 
-  
-  public getUser(response:GetItemCommandOutput): User|null {
 
-    if(response.$metadata.httpStatusCode !==200 || !response.Item) {
+  public getUser(response: GetItemCommandOutput): User | null {
+
+    if (response.$metadata.httpStatusCode !== 200 || !response.Item) {
       return null;
     }
 
     const attributes = response.Item;
-    const user:User = new User();
+    const user: User = new User();
 
-    for( let [field, attrType] of this.fieldType.entries()) {
+    for (let [field, attrType] of this.fieldType.entries()) {
       const attrName = field.toUpperCase();
-      const attrValue = attributes[attrName]? [attrType]: null;
+      const attrValue: any = attributes[attrName];
 
-      attrValue && (user[field] = attrValue);
+      attrValue[attrType] && (user[field] = attrValue[attrType]);
     }
 
     return user as User;
   }
 }
 
+class UserSessionModal extends FoodHubModal {
+  private prefixPK: string = 'user#'
+  private prefixSK: string = 'session#'
+
+  protected entityType: string = 'UserSession';
+  protected hashKey: string;
+  protected rangeKey!: string;
+
+  constructor(userName: string) {
+    super();
+    this.hashKey = this.prefixPK + userName;
+    return this;
+  }
+  get sessionId(): string {
+    return this.rangeKey;
+  }
+  set sessionId(id: string) {
+    this.rangeKey = id;
+  }
+  addSession(ttl: number) {
+    this.rangeKey = this.generateId(this.prefixSK);
+    return this.getAttributeMap({
+      TTL: { N: ttl }
+    });
+  }
+}
 
 export class UserEntity {
 
-  async addUser(user: User): Promise<boolean> {
+  async addUser(user: User): Promise<void> {
     try {
       const userModal = new UserModal(user.userName);
-      const putCommandInput =  userModal.getAttributeMap(user);
-
-      const response = await dynamoDB.send(new PutItemCommand({...putCommandInput}));
-      return response.$metadata.httpStatusCode === 200;
-      
+      const response = await dynamoDB.send(new PutItemCommand(userModal.getAttributeMap(user)));
+      verifyAndThrowStatusError(response);
     } catch (e) {
-      logger.error('UserEntity - addUser Expection', e);
-      throw 'UserEntity - AddUser Expection';
+      throw logExpection('UserEntity - addUser Expection', e);
     }
   }
 
@@ -153,9 +171,30 @@ export class UserEntity {
       const response = await dynamoDB.send(new GetItemCommand(userModal.findById()));
       return userModal.getUser(response);
     } catch (e) {
-      logger.error('UserEntity - getUserByName Exception', e);
-      throw 'UserEntity - AddUser Expection';
+      throw logExpection('UserEntity - getUserByName Expection', e);
     }
   }
 
+  async addUserSession(name: string, ttl: number): Promise<string> {
+    try {
+      const sessionModel = new UserSessionModal(name);
+      const response = await dynamoDB.send(new PutItemCommand(sessionModel.addSession(ttl)));
+      verifyAndThrowStatusError(response);
+      return sessionModel.sessionId;
+    } catch (e) {
+      throw logExpection('UserEntity - addUserSession Expection', e);
+    }
+  }
+  async isValidUserSession(name: string, sessionId: string): Promise<boolean> {
+    try {
+      const sessionModel = new UserSessionModal(name);
+      sessionModel.sessionId = sessionId;
+      const response = await dynamoDB.send(new GetItemCommand(sessionModel.findById()));
+      verifyAndThrowStatusError(response)
+      return Boolean(response.Item);
+    } catch (e) {
+      throw logExpection('UserEntity - isValidUserSession Expection', e);
+    }
+  }
+  async deleteSession(name: string, sessionId: string, ttl: number) {}
 }

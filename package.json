@@ -1,0 +1,41 @@
+{
+  "name": "food-hub-online",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "debug": "tsc && node -r dotenv/config --inspect ./dist/index.js",
+    "start": "nodemon -w *.ts -e ts -x ts-node -r dotenv/config  --files -H -T ./src/index.ts"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.588.0",
+    "bcrypt": "5.1.1",
+    "cookie-parser": "1.4.4",
+    "express": "4.16.1",
+    "jsonwebtoken": "9.0.2",
+    "morgan": "1.9.1",
+    "passport": "0.7.0",
+    "passport-jwt": "4.0.1"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "2.4.6",
+    "@types/body-parser": "1.19.5",
+    "@types/cookie-parser": "^1.4.7",
+    "@types/express": "4.17.21",
+    "@types/jsonwebtoken": "9.0.6",
+    "@types/morgan": "^1.9.9",
+    "aws-sdk": "^2.1632.0",
+    "bluebird": "3.7.2",
+    "chai": "4.2.0",
+    "chai-http": "4.3.0",
+    "cross-env": "7.0.2",
+    "dotenv": "^16.4.5",
+    "joi": "^17.13.1",
+    "mocha": "7.1.0",
+    "mocha-junit-reporter": "1.23.3",
+    "mocha-multi-reporters": "1.1.7",
+    "nodemon": "3.1.1",
+    "sinon": "15.1.0",
+    "ts-node": "10.9.2",
+    "typescript": "5.4.5"
+  }
+}

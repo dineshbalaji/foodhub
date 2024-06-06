@@ -1,6 +1,8 @@
-export default {
-    log:console.log,
-    info:console.info,
-    error:console.error,
-    warn: console.warn,
-};
+import winston from 'winston';
+
+export default winston.createLogger({
+  level: 'info',
+  format: winston.format.json(),
+  transports: [new winston.transports.Console()],
+});
+

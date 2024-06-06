@@ -1,14 +1,16 @@
+import { hash, compare } from 'bcrypt';
 import { appConfig } from "../../config";
 import { createAuthToken } from "../../lib/jwt-auth";
 import logger from "../../lib/logger";
 import { ErrorResponse } from "../../lib/response-messages";
-import { User, UserEntity } from "./user-entity";
-import { hash, compare } from 'bcrypt';
+import { User } from "./model/user-model";
+import { UserEntity } from "./user-entity";
+
+
 
 export class UserController {
 
-  constructor(private userEntity: UserEntity = new UserEntity() ) {
-  }
+  constructor(private userEntity: UserEntity = new UserEntity() ) {}
 
   async registerUser(user: User): Promise<void> {
     try {
@@ -50,6 +52,13 @@ export class UserController {
         throw e;
       }
       throw new ErrorResponse(`Unable to Login, try sometime later`, { statusCode: 500 });
+    }
+  }
+  async deleteUserSession(userName:string, sessionId:string):Promise<boolean> {
+    try {
+      return this.userEntity.deleteSession(userName, sessionId);
+    } catch(e: any) {
+      throw new ErrorResponse(`Unable to logut, try sometime later`, { statusCode: 500 });
     }
   }
 

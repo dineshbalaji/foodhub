@@ -1,4 +1,4 @@
-import { BatchGetItemCommand, DeleteItemCommand, GetItemCommand, GetItemCommandOutput, PutItemCommand, PutItemCommandOutput, QueryCommand } from "@aws-sdk/client-dynamodb";
+import { BatchGetItemCommand, DeleteItemCommand, PutItemCommand, QueryCommand } from "@aws-sdk/client-dynamodb";
 import { dynamoDB } from "../../lib/dynamo-client";
 import { logExpection, verifyAndThrowStatusError } from "../../lib/utils";
 import { CartItem, CartModel } from "./cart-model";
@@ -30,7 +30,7 @@ export class CartEntity {
     }
   }
 
-  async list(userId: string): Promise<CartItem[]> {
+  async listWithMenu(userId: string): Promise<CartItem[]> {
     try {
       const cartModel = new CartModel();
       const command = cartModel.listQuery(userId);
@@ -62,20 +62,20 @@ export class CartEntity {
       }));
       const menuResponses = batchResponse.Responses[cartModel.tableName];
 
-      const menuIdMap:Map<string, MenuItem> = new Map();
+      const menuIdMap: Map<string, MenuItem> = new Map();
       const menuItemModal = new MenuModel();
       menuResponses.map((attribute: any) => {
         const menuId = MenuModel.getIdFromKey(attribute.SK.S);
         menuIdMap.set(menuId, menuItemModal.getObjectFromAttributeMap<MenuItem>(attribute))
       });
 
-      items = items.map((item:CartItem) => {
+      items = items.map((item: CartItem) => {
         item.detail = menuIdMap.get(item.menuId);
         return item;
       });
 
       return items;
-
+      
     } catch (e) {
       console.log(e);
       throw logExpection(`CartEntity - viewing cart item expection from userId:${userId}`, e);

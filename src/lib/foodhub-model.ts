@@ -7,7 +7,9 @@ export enum EntityTypes {
     USER_SESSION = 'UserSession',
     MENU_ITEM = 'MenuItem',
     RESTAURANT = 'Restaurant',
-    USER_CART = 'CartItem'
+    USER_CART = 'CartItem',
+    ORDER_INFO = 'OrderInfo',
+    ORDER_ITEM = 'OrderItem'
 }
 
 export abstract class FoodHubModel {
@@ -20,9 +22,9 @@ export abstract class FoodHubModel {
     public getAttributeMapFromObject(items: any = {}): any {
         const attributes: any = {};
         for (let field in items) {
-          const attrName = field.toUpperCase();
-          const attrType: string | undefined = this.fieldType.get(field);
-          attrType && (attributes[attrName] = { [attrType]: items[field] });
+            const attrName = field.toUpperCase();
+            const attrType: string | undefined = this.fieldType.get(field);
+            attrType && (attributes[attrName] = { [attrType]: items[field] });
         }
         return {
             TableName: this.tableName,
@@ -34,18 +36,16 @@ export abstract class FoodHubModel {
             }
         }
     }
-    public getObjectFromAttributeMap<T>(attributes: any ): T {
-        
+    public getObjectFromAttributeMap<T>(attributes: any): T {
         const obj: any = {};
         for (let [field, attrType] of this.fieldType.entries()) {
             const attrName = field.toUpperCase();
-            const attrValue: any = attributes[attrName];
+            const attrValue: any = attributes[attrName] || {};
 
             attrValue[attrType] && (obj[field] = attrValue[attrType]);
         }
         return obj as T;
     }
-
     public findById() {
         return {
             TableName: this.tableName,
@@ -55,17 +55,26 @@ export abstract class FoodHubModel {
             }
         }
     }
-    public findByEntityType(entityType:EntityTypes) {
+    public findByMenuStatus(status: string) {
         return {
             TableName: this.tableName,
-            IndexName: 'EntityType-GSI',
-            KeyConditionExpression: 'ENTITYTYPE = :entityType',
+            IndexName: 'MenuItem-GSI',
+            KeyConditionExpression: 'MENUSTATUS = :menuStatus',
             ExpressionAttributeValues: {
-                ':entityType': { S: entityType }
+                ':menuStatus': { S: status }
             }
         }
     }
-
+    public findOrderByUserId(userName: string) {
+        return {
+            TableName: this.tableName,
+            IndexName: 'OrderByUserId',
+            KeyConditionExpression: 'ORDERUSERID = :userName',
+            ExpressionAttributeValues: {
+                ':userName': { S: userName }
+            }
+        }
+    }
     protected generateId(prefix: string): string {
         const randomNumber = randomBytes(3).toString('hex');
         return `${prefix}${randomNumber}`;

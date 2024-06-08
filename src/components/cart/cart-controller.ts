@@ -41,7 +41,7 @@ export class CartController {
   }
   async listCartItems(userId: string=''): Promise<CartItem[]> {
     try {
-      const cartItems:CartItem[] = await this.cartEntity.list(userId);
+      const cartItems:CartItem[] = await this.cartEntity.listWithMenu(userId);
       return cartItems;
     } catch (e: any) {
       logger.error('Unable to list Cart Items', e);

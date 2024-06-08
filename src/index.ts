@@ -5,6 +5,7 @@ import logger from 'morgan';
 import UserRouter from './components/user/user-route';
 import MenuRouter from './components/menu/menu-route';
 import CartRouter from './components/cart/cart-route';
+import OrderRouter from './components/order/order-route';
 import { verifyUserToken } from './lib/jwt-auth';
 import { UserTypes } from './components/user/model/user-model';
 
@@ -19,6 +20,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/user', UserRouter);
 app.use('/menu', MenuRouter);
 app.use('/cart', verifyUserToken(UserTypes.CUSTOMER), CartRouter);
+app.use('/order', verifyUserToken(UserTypes.CUSTOMER), OrderRouter);
 
 app.get('/', function(req:Request, res:Response) {
     res.send('Healthy');

@@ -1,12 +1,16 @@
 import { EntityTypes, FoodHubModel } from "../../lib/foodhub-model";
 import { GetItemCommandOutput } from "@aws-sdk/client-dynamodb";
 
+enum MenuStatus {
+  ACTIVE = 'active'
+}
 export class MenuItem {
   menuId?: string
   name!: string;
   desc!: string;
   tag!: string;
-  price!: string;
+  price!: number;
+  menuStatus?:string;
   [key: string]: any;
 }
 
@@ -32,7 +36,8 @@ export class MenuModel extends FoodHubModel {
     ['name', 'S'],
     ['desc', 'S'],
     ['tag', 'S'],
-    ['price', 'S']
+    ['price', 'N'],
+    ['menuStatus', 'S'],
   ]);
 
   constructor() {
@@ -42,7 +47,7 @@ export class MenuModel extends FoodHubModel {
   public addMenuItemCommand(restId:string, menuItem: MenuItem): any {
     this.hashKey = MenuModel.prefixPK+restId;
     this.rangeKey = `${this.generateId(MenuModel.prefixSK)}#${restId}`;
-
+    menuItem.menuStatus = MenuStatus.ACTIVE;
     return this.getAttributeMapFromObject(menuItem);
   }
   
@@ -54,7 +59,7 @@ export class MenuModel extends FoodHubModel {
   }
 
   public getMenuItemsCommand() {
-    return this.findByEntityType(this.entityType);
+    return this.findByMenuStatus(MenuStatus.ACTIVE);
   }
 
 }

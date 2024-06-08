@@ -1,12 +1,11 @@
 import { EntityTypes, FoodHubModel } from "../../lib/foodhub-model";
 import { MenuItem, MenuModel } from "../menu/menu-model";
 
-export class CartItem  {
-  qty!: number;
-  menuId!: string;
+export interface CartItem  {
+  qty: number;
+  menuId: string;
   detail?:MenuItem;
 }
-
 
 export class CartModel extends FoodHubModel {
   private readonly prefixPK: string = 'user#';
@@ -45,5 +44,4 @@ export class CartModel extends FoodHubModel {
   public getMenuKey(cartId:string) {
     return cartId.slice(this.prefixSK.length)
   }
-
 }

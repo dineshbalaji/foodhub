@@ -42,7 +42,7 @@ export class UserController {
       const existUser = await this.userEntity.getUserByName(user.userName);
       if (existUser && await compare(user.password, existUser.password)) {
         const sessionId = await this.userEntity.addUserSession(user.userName, this.getExpireAt());
-        return createAuthToken({ userName: user.userName, sessionId });
+        return createAuthToken({ userName: user.userName, type:existUser.type, sessionId });
       } else {
         throw new ErrorResponse('Please verify username & password', { statusCode: 400 })
       }

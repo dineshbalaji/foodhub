@@ -3,8 +3,10 @@ import path from 'path';
 import cookieParser from 'cookie-parser';
 import logger from 'morgan';
 import UserRouter from './components/user/user-route';
-import { UserEntity } from './components/user/user-entity';
-import { AuthRequest, verifyUserToken } from './lib/jwt-auth';
+import MenuRouter from './components/menu/menu-route';
+import CartRouter from './components/cart/cart-route';
+import { verifyUserToken } from './lib/jwt-auth';
+import { UserTypes } from './components/user/model/user-model';
 
 const app = express();
 app.use(logger('dev'));
@@ -15,7 +17,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 
 app.use('/user', UserRouter);
-app.use('/menu', verifyUserToken(new UserEntity()), function(req:AuthRequest, res:Response) {});
+app.use('/menu', verifyUserToken(UserTypes.RESTAURANT_OWNER), MenuRouter);
+app.use('/cart', verifyUserToken(UserTypes.CUSTOMER), CartRouter);
 
 app.get('/', function(req:Request, res:Response) {
     res.send('<p>Healthy</p>');

@@ -8,7 +8,7 @@ export class UserEntity {
   async addUser(user: User): Promise<void> {
     try {
       const userModel = new UserModel(user.userName);
-      const response = await dynamoDB.send(new PutItemCommand(userModel.getAttributeMap(user)));
+      const response = await dynamoDB.send(new PutItemCommand(userModel.getAttributeMapFromObject(user)));
       verifyAndThrowStatusError(response);
     } catch (e) {
       throw logExpection('UserEntity - addUser Expection', e);
@@ -19,7 +19,8 @@ export class UserEntity {
     try {
       const userModel = new UserModel(name);
       const response = await dynamoDB.send(new GetItemCommand(userModel.findById()));
-      return userModel.getUser(response);
+      verifyAndThrowStatusError(response);
+      return (response.Item && userModel.getObjectFromAttributeMap(response.Item));
     } catch (e) {
       throw logExpection('UserEntity - getUserByName Expection', e);
     }

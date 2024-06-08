@@ -64,8 +64,48 @@ const dynamoDB = new DynamoDBClient(DynamoDBConfig);
                 ENTITYTYPE: {S: 'MenuItem'},
                 NAME: { S: "Rava Dosai" },
                 DESC: { S: "A scrumptious dosa made of mildly spiced semolina batter and garnished with diced cashews, served with sambar, tomato and coconut chutneys" },
-                PRICE: { N: '100' },
+                PRICE: { N: '150' },
                 TAG:  { S: 'VEG' }
+              }
+            }
+          },
+          {
+            PutRequest: {
+              Item: {
+                PK: { S: "user#dinesh20" },
+                SK: { S: "cart#menu#5875#001" },
+                ENTITYTYPE: {S: 'CartItem'},
+                QTY: {N: '2'}
+              }
+            }
+          },
+          {
+            PutRequest: {
+              Item: {
+                PK: { S: "order#23423" },
+                SK: { S: "info" },
+                ENTITYTYPE: {S: 'OrderInfo'},
+                CUSTOMERNAME: {S: 'user#dinesh20'},
+                CREATED: {S: '2020-06-21T19:10:00'},
+                STATUS:{ S: 'initiated'}
+              }
+            }
+          },
+          {
+            PutRequest: {
+              Item: {
+                PK: { S: "order#23423" },
+                SK: { S: "menu#1234#001" },
+                ENTITYTYPE: {S: 'OrderItem'},
+                QTY: {N: '1'},
+                DETAIL:{
+                  M:{
+                    NAME: { S: "Plain Dosai" },
+                    DESC: { S: "A mouthwatering golden brown dosa made of rice and lentil batter with a crispy exterior texture, served with a spicy sambar and chutneys" },
+                    PRICE: { N: '100' },
+                    TAG:  { S: 'VEG' }
+                  }
+                }
               }
             }
           }

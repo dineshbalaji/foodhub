@@ -9,10 +9,10 @@ const router = Router();
 const userCtrl:UserController = new UserController();
 
 router.post('/register', async(req:Request<any>, res:Response, next:NextFunction)=> {
-    const { userName, password, firstName }:User = req.body;
+    const { userName, password, firstName, type }:User = req.body;
 
     try {
-       await userCtrl.registerUser({userName, password, firstName });
+       await userCtrl.registerUser({userName, password, firstName, type });
        res.locals.success = new SuccessResponse('User Registered');
        next();
     } catch(err) {
@@ -30,7 +30,7 @@ router.post('/login', async(req:Request, res:Response, next:NextFunction) => {
         next(err);
     }
 })
-router.get('/logout', verifyUserToken(new UserEntity()), async(req:AuthRequest, res:Response, next:NextFunction) => {
+router.get('/logout', verifyUserToken(), async(req:AuthRequest, res:Response, next:NextFunction) => {
     try {
         const { userName='', sessionId='' } = req;
         await userCtrl.deleteUserSession(userName, sessionId);

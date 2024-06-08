@@ -60,7 +60,7 @@ const dynamoDB = new DynamoDBClient(DynamoDBConfig);
             PutRequest: {
               Item: {
                 PK: { S: "rest#002" },
-                SK: { S: "menu#5875#001" },
+                SK: { S: "menu#5875#002" },
                 ENTITYTYPE: {S: 'MenuItem'},
                 NAME: { S: "Rava Dosai" },
                 DESC: { S: "A scrumptious dosa made of mildly spiced semolina batter and garnished with diced cashews, served with sambar, tomato and coconut chutneys" },

@@ -22,15 +22,21 @@ router.put('/add', async (req: AuthRequest, res: Response, next: NextFunction) =
 router.delete('/remove', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     await cartCtrl.removeFromCart(req.body.menuId, req.userName);
-    res.locals.success = new SuccessResponse('Item added into Cart');
+    res.locals.success = new SuccessResponse('Item removed from Cart');
     next();
   } catch (err) {
     next(err);
   }
 })
 
-router.get('/list', async (req: Request, res: Response, next: NextFunction) => {
-
+router.get('/list', async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const items = await cartCtrl.listCartItems(req.userName);
+    res.locals.success = new SuccessResponse('Listed cart items', { items });
+    next();
+  } catch (err) {
+    next(err);
+  }
 })
 
 export default router;

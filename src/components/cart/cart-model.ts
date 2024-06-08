@@ -4,8 +4,7 @@ import { MenuItem, MenuModel } from "../menu/menu-model";
 export class CartItem  {
   qty!: number;
   menuId!: string;
-  menuItem!:MenuItem;
-
+  detail?:MenuItem;
 }
 
 
@@ -32,10 +31,19 @@ export class CartModel extends FoodHubModel {
 
     return this.findById();
   }
-
-  public list() {
-    return this.findByEntityType(this.entityType);
-
+  public listQuery(userId:string) {
+    this.hashKey = this.prefixPK+userId;
+    return {
+      TableName: this.tableName,
+      KeyConditionExpression: 'PK = :hashKey AND begins_with(SK, :prefixSK)',
+      ExpressionAttributeValues: {
+        ':hashKey': { S: this.hashKey },
+        ':prefixSK': { S: this.prefixSK }
+      }
+    };
+  }
+  public getMenuKey(cartId:string) {
+    return cartId.slice(this.prefixSK.length)
   }
 
 }

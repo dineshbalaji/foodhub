@@ -17,11 +17,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 
 app.use('/user', UserRouter);
-app.use('/menu', verifyUserToken(UserTypes.RESTAURANT_OWNER), MenuRouter);
+app.use('/menu', MenuRouter);
 app.use('/cart', verifyUserToken(UserTypes.CUSTOMER), CartRouter);
 
 app.get('/', function(req:Request, res:Response) {
-    res.send('<p>Healthy</p>');
+    res.send('Healthy');
 });
 
 app.use((req:Request,res:Response, next:NextFunction)=> {

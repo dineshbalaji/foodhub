@@ -2,12 +2,14 @@ import { Request, Response, NextFunction, Router } from "express";
 import { SuccessResponse } from "../../lib/response-messages";
 import { MenuController } from "./menu-controller";
 import { MenuItem } from "./menu-model";
+import { verifyUserToken } from "../../lib/jwt-auth";
+import { UserTypes } from "../user/model/user-model";
 
 
 const router = Router();
 const menuCtrl:MenuController = new MenuController();
 
-router.put('/:restId', async(req:Request, res:Response, next:NextFunction)=> {
+router.put('/:restId', verifyUserToken(UserTypes.RESTAURANT_OWNER), async(req:Request, res:Response, next:NextFunction)=> {
     const menuItem:MenuItem = req.body;
     const restId = req.params.restId;
 
@@ -19,7 +21,7 @@ router.put('/:restId', async(req:Request, res:Response, next:NextFunction)=> {
         next(err);
     }
 })
-router.delete('/:menuId', async(req:Request, res:Response, next:NextFunction)=> {
+router.delete('/:menuId', verifyUserToken(UserTypes.RESTAURANT_OWNER), async(req:Request, res:Response, next:NextFunction)=> {
     const menuId = req.params.menuId;
 
     try {
@@ -31,7 +33,7 @@ router.delete('/:menuId', async(req:Request, res:Response, next:NextFunction)=> 
     }
 })
 
-router.get('/:restId', async(req:Request, res:Response, next:NextFunction) => {
+router.get('/:restId', verifyUserToken(UserTypes.CUSTOMER), async(req:Request, res:Response, next:NextFunction) => {
     try {
         const menuItems:MenuItem[] = await menuCtrl.getAllMenuItems(req.params.restId);
         res.locals.success = new SuccessResponse('Successfully get all menu items', { menuItems });

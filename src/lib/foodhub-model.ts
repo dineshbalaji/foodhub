@@ -11,7 +11,7 @@ export enum EntityTypes {
 }
 
 export abstract class FoodHubModel {
-    private tableName: string = 'FoodHub';
+    public readonly tableName: string = 'FoodHub';
     protected abstract entityType: EntityTypes;
     protected abstract hashKey: string;
     protected abstract rangeKey: string;

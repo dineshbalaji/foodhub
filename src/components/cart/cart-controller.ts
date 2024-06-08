@@ -39,9 +39,9 @@ export class CartController {
       throw new ErrorResponse(`Unable add to cart`, { statusCode: 500 });
     }
   }
-  async listCartItems(userId: string): Promise<CartItem[]> {
+  async listCartItems(userId: string=''): Promise<CartItem[]> {
     try {
-      const cartItems: CartItem[] = await this.cartEntity.list(userId);
+      const cartItems:CartItem[] = await this.cartEntity.list(userId);
       return cartItems;
     } catch (e: any) {
       logger.error('Unable to list Cart Items', e);

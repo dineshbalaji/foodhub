@@ -54,8 +54,6 @@ export class CartEntity {
         return item;
       });
 
-      
-
       const batchResponse = await dynamoDB.send(new BatchGetItemCommand({
         RequestItems: {
           [cartCmd.tableName]: {
@@ -79,7 +77,6 @@ export class CartEntity {
         item.detail = menuIdMap.get(item.menuId);
         return item;
       });
-      
     } catch (e) {
       logger.info(`CartEntity - viewing cart item expection from userId:${userId}`, e);
       return [];

@@ -1,22 +1,10 @@
 import { BatchWriteItemCommand } from "@aws-sdk/client-dynamodb";
+import { dynamoDB } from "./lib/dynamo-db-client";
+import logger from "./lib/logger";
 
-const { DynamoDBClient, PutItemCommand } = require("@aws-sdk/client-dynamodb");
-const { AWS_DB_REGION, AWS_DB_ENDPOINT, AWS_DB_ACCESSKEY, AWS_DB_SECRETKEY } = process.env;
-const DynamoDBConfig = {
-  region: AWS_DB_REGION,
-  endpoint: AWS_DB_ENDPOINT,
-  credentials: {
-    accessKeyId: AWS_DB_ACCESSKEY,
-    secretAccessKey: AWS_DB_SECRETKEY
-  }
-};
-const dynamoDB = new DynamoDBClient(DynamoDBConfig);
-
-
-(async () => {
-  // Inserting by default Restrauctents
+export const insertRestaurants = async() => {
   try {
-    const results2 = await dynamoDB.send(new BatchWriteItemCommand({
+    const results = await dynamoDB.send(new BatchWriteItemCommand({
       RequestItems: {
         'FoodHub': [
           {
@@ -70,56 +58,12 @@ const dynamoDB = new DynamoDBClient(DynamoDBConfig);
                 MENUSTATUS: { S: 'active' }
               }
             }
-          },
-          {
-            PutRequest: {
-              Item: {
-                PK: { S: "user#dinesh20" },
-                SK: { S: "cart#menu#5875#001" },
-                ENTITYTYPE: { S: 'CartItem' },
-                QTY: { N: '2' }
-              }
-            }
-          },
-          {
-            PutRequest: {
-              Item: {
-                PK: { S: "order#23423" },
-                SK: { S: "info" },
-                ENTITYTYPE: { S: 'OrderInfo' },
-                ORDERUSERID: { S: 'dinesh20' },
-                CREATEDAT: { S: '2020-06-21T19:10:01' },
-                STATUS: { S: 'initiated' },
-                TOTALPRICE: { N: '200' }
-              }
-            }
-          },
-          {
-            PutRequest: {
-              Item: {
-                PK: { S: "order#23423" },
-                SK: { S: "menu#1234#001" },
-                ENTITYTYPE: { S: 'OrderItem' },
-                QTY: { N: '1' },
-                DETAIL: {
-                  M: {
-                    NAME: { S: "Plain Dosai" },
-                    DESC: { S: "A mouthwatering golden brown dosa made of rice and lentil batter with a crispy exterior texture, served with a spicy sambar and chutneys" },
-                    PRICE: { N: '100' },
-                    TAG: { S: 'VEG' }
-                  }
-                }
-              }
-            }
           }
         ]
       }
     }));
-
-    console.log(results2);
-
+    logger.info('Default Restaurants data inserted');
   } catch (err) {
-    console.error(err);
+    logger.error('Error: Default Restaurants data insertion failed');
   }
-})();
-export { dynamoDB };
+};

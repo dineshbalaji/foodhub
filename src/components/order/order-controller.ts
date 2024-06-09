@@ -22,11 +22,11 @@ export class OrderController {
       const orders = await this.orderEntity.orderHistoryByUserId(userId);
       return orders;
     } catch (e: any) {
-      logger.error('Unable remove from cart', e);
+      logger.error('Unable list orders', e);
       if (e instanceof ErrorResponse) {
         throw e;
       }
-      throw new ErrorResponse(`Unable add to cart`, { statusCode: 500 });
+      throw new ErrorResponse(`Unable list orders, try sometime later`, { statusCode: 500 });
     }
   }
 }

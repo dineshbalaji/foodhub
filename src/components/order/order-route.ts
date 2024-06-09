@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction, Router } from "express";
 import { SuccessResponse } from "../../lib/response-messages";
-import { AuthRequest } from "../../lib/jwt-auth";
+import { AuthRequest } from "../../lib/jwt-auth-token";
 import { OrderController } from "./order-controller";
 
 

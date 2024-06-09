@@ -1,6 +1,4 @@
-import { GetItemCommandOutput, GetItemOutput } from '@aws-sdk/client-dynamodb';
 import { randomBytes } from 'crypto';
-
 
 export enum EntityTypes {
     USER_INFO = 'UserInfo',
@@ -12,14 +10,20 @@ export enum EntityTypes {
     ORDER_ITEM = 'OrderItem'
 }
 
-export abstract class FoodHubModel {
+export abstract class FoodHubCommand {
     public readonly tableName: string = 'FoodHub';
+
     protected abstract entityType: EntityTypes;
     protected abstract hashKey: string;
     protected abstract rangeKey: string;
     protected abstract fieldType: Map<string, string>;
 
-    public getAttributeMapFromObject(items: any = {}): any {
+    protected generateId(prefix: string): string {
+        const randomNumber = randomBytes(3).toString('hex');
+        return `${prefix}${randomNumber}`;
+    }
+
+    getAttributeMapFromObject(items: any = {}): any {
         const attributes: any = {};
         for (let field in items) {
             const attrName = field.toUpperCase();
@@ -36,7 +40,7 @@ export abstract class FoodHubModel {
             }
         }
     }
-    public getObjectFromAttributeMap<T>(attributes: any): T {
+    getObjectFromAttributeMap<T>(attributes: any): T {
         const obj: any = {};
         for (let [field, attrType] of this.fieldType.entries()) {
             const attrName = field.toUpperCase();
@@ -46,7 +50,7 @@ export abstract class FoodHubModel {
         }
         return obj as T;
     }
-    public findById() {
+    findById() {
         return {
             TableName: this.tableName,
             Key: {
@@ -55,7 +59,7 @@ export abstract class FoodHubModel {
             }
         }
     }
-    public findByMenuStatus(status: string) {
+    findByMenuStatus(status: string) {
         return {
             TableName: this.tableName,
             IndexName: 'MenuItem-GSI',
@@ -65,7 +69,7 @@ export abstract class FoodHubModel {
             }
         }
     }
-    public findOrderByUserId(userName: string) {
+    findOrderByUserId(userName: string) {
         return {
             TableName: this.tableName,
             IndexName: 'OrderByUserId',
@@ -74,9 +78,5 @@ export abstract class FoodHubModel {
                 ':userName': { S: userName }
             }
         }
-    }
-    protected generateId(prefix: string): string {
-        const randomNumber = randomBytes(3).toString('hex');
-        return `${prefix}${randomNumber}`;
     }
 }

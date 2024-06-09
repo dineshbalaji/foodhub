@@ -1,8 +1,8 @@
-import { EntityTypes, FoodHubModel } from "../../../lib/foodhub-model";
+import { EntityTypes, FoodHubCommand } from "../../../lib/foodhub-command";
 
-export class UserSessionModal extends FoodHubModel {
-  private prefixPK: string = 'user#'
-  private prefixSK: string = 'session#'
+export class UserSessionCommand extends FoodHubCommand {
+  private prefixPK: string = 'user#';
+  private prefixSK: string = 'session#';
 
   protected entityType: EntityTypes = EntityTypes.USER_SESSION;
   protected hashKey: string;

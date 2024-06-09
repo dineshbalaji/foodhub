@@ -1,14 +1,17 @@
-import { DeleteItemCommand, GetItemCommand, GetItemCommandOutput, PutItemCommand, PutItemCommandOutput, QueryCommand } from "@aws-sdk/client-dynamodb";
-import { dynamoDB } from "../../lib/dynamo-client";
+import { DeleteItemCommand, PutItemCommand, QueryCommand } from "@aws-sdk/client-dynamodb";
+
+import {MenuCommand} from './menu-command';
+import {MenuItem} from './menu-model';
+
+import { dynamoDB } from "../../lib/dynamo-db-client";
 import { logExpection, verifyAndThrowStatusError } from "../../lib/utils";
-import { MenuItem, MenuModel } from "./menu-model";
 
 export class MenuEntity {
 
   async add(restId:string,menuItem:MenuItem):Promise<void> {
     try {
-      const menuItemModal:MenuModel = new MenuModel();
-      const putMenuItemCommand = menuItemModal.addMenuItemCommand(restId,menuItem);
+      const menuCommand:MenuCommand = new MenuCommand();
+      const putMenuItemCommand = menuCommand.addMenuItemCommand(restId,menuItem);
       const response = await dynamoDB.send(new PutItemCommand(putMenuItemCommand));
       verifyAndThrowStatusError(response);
     } catch (e) {
@@ -18,8 +21,8 @@ export class MenuEntity {
 
   async remove(menuId:string):Promise<boolean> {
     try {
-      const menuItemModal:MenuModel = new MenuModel();
-      const command = menuItemModal.removeMenuItemCommand(menuId);
+      const menuCommand:MenuCommand = new MenuCommand();
+      const command = menuCommand.removeMenuItemCommand(menuId);
       const response = await dynamoDB.send(new DeleteItemCommand(command));
       verifyAndThrowStatusError(response);
       return true;
@@ -35,14 +38,14 @@ export class MenuEntity {
 
   async list():Promise<MenuItem[]> {
     try{
-      const menuItemModal:MenuModel = new MenuModel();
-      const command = menuItemModal.getMenuItemsCommand();
+      const menuCommand:MenuCommand = new MenuCommand();
+      const command = menuCommand.getMenuItemsCommand();
       const response = await dynamoDB.send(new QueryCommand(command));
-      verifyAndThrowStatusError(response);
+      verifyAndThrowStatusError(response, { checkItems: true });
   
-      return response.Items.map((attribute:any) => {
-        const menuItem:MenuItem = menuItemModal.getObjectFromAttributeMap<MenuItem>(attribute);
-        menuItem.menuId = MenuModel.getIdFromKey(attribute.SK.S);
+      return (response.Items || []).map((attribute:any) => {
+        const menuItem:MenuItem = menuCommand.getObjectFromAttributeMap<MenuItem>(attribute);
+        menuItem.menuId = MenuCommand.getIdFromKey(attribute.SK.S);
         return menuItem;
       })
     } catch (e) {

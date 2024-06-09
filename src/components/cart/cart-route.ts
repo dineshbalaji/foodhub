@@ -1,12 +1,10 @@
-import { Request, Response, NextFunction, Router } from "express";
-import { SuccessResponse } from "../../lib/response-messages";
-import { AuthRequest } from "../../lib/jwt-auth";
+import { Response, NextFunction, Router } from "express";
 import { CartController } from "./cart-controller";
 import { CartItem } from "./cart-model";
-
+import { SuccessResponse } from "../../lib/response-messages";
+import { AuthRequest } from "../../lib/jwt-auth-token";
 
 const router = Router();
-
 const cartCtrl = new CartController();
 
 router.put('/add', async (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -18,7 +16,6 @@ router.put('/add', async (req: AuthRequest, res: Response, next: NextFunction) =
     next(err);
   }
 })
-
 router.delete('/remove', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     await cartCtrl.removeFromCart(req.body.menuId, req.userName);
@@ -28,7 +25,6 @@ router.delete('/remove', async (req: AuthRequest, res: Response, next: NextFunct
     next(err);
   }
 })
-
 router.get('/list', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const items = await cartCtrl.listCartItems(req.userName);

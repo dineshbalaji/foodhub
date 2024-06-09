@@ -4,7 +4,7 @@ import logger from './logger';
 import { appConfig } from '../config';
 import { NextFunction, Request, Response } from 'express';
 import { UserEntity } from '../components/user/user-entity';
-import { UserTypes } from '../components/user/model/user-model';
+import { UserTypes } from '../components/user/user-model';
 const { ErrorResponse } = require('./response-messages');
 
 export interface AuthRequest extends Request {
@@ -14,7 +14,7 @@ export interface AuthRequest extends Request {
 export interface AuthTokenPayload {
 	userName:string
 	sessionId:string
-	type:number
+	type:UserTypes
 }
 
 export const createAuthToken = (payload:AuthTokenPayload):string => {
@@ -26,7 +26,7 @@ export const createAuthToken = (payload:AuthTokenPayload):string => {
 	}
 }
 
-export const verifyUserToken = (type?:UserTypes) => async (req:AuthRequest, res:Response, next:NextFunction) => {
+export const verifyAuthToken = (type?:UserTypes) => async (req:AuthRequest, res:Response, next:NextFunction) => {
 	try {
 		const userEntity = new UserEntity();
 		const token = String(req.headers['auth-token']);

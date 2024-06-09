@@ -39,7 +39,6 @@ export class CartEntity {
       verifyAndThrowStatusError(response, { checkItems:true });
 
       const menuDetailKeys: { PK: any; SK: { S: string; }; }[] = [];
-      
       let items = (response.Items || []).map((attribute: any) => {
         const menuKey = cartCmd.getMenuKey(attribute.SK.S);
         const menuId = MenuCommand.getIdFromKey(menuKey);
@@ -48,12 +47,10 @@ export class CartEntity {
           PK: { S: menuPK },
           SK: { S: menuSK }
         });
-
         const item: CartItem = cartCmd.getObjectFromAttributeMap<CartItem>(attribute);
         item.menuId = menuId;
         return item;
       });
-
       const batchResponse = await dynamoDB.send(new BatchGetItemCommand({
         RequestItems: {
           [cartCmd.tableName]: {
@@ -65,14 +62,12 @@ export class CartEntity {
         throw `Couldn't retrieve MenuItem response from carts`;
       }
       const menuResponses = batchResponse.Responses[cartCmd.tableName];
-
       const menuIdMap: Map<string, MenuItem> = new Map();
       const menuItemCmd = new MenuCommand();
       menuResponses.forEach((attribute: any) => {
         const menuId = MenuCommand.getIdFromKey(attribute.SK.S);
         menuIdMap.set(menuId, menuItemCmd.getObjectFromAttributeMap<MenuItem>(attribute))
       });
-
       return items.map((item: CartItem) => {
         item.detail = menuIdMap.get(item.menuId);
         return item;

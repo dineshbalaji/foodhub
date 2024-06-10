@@ -6,7 +6,7 @@ import { CartItem } from "../cart/cart-model";
 import { OrderInfoCommand, OrderItemCommand } from "./order-command";
 import { MenuCommand } from "../menu/menu-command";
 import { CartCommand } from "../cart/cart-command";
-import { OrderInfo } from "./order-model";
+import { OrderInfo, OrderItem } from "./order-model";
 import logger from "../../lib/logger";
 
 export class OrderEntity {
@@ -18,7 +18,11 @@ export class OrderEntity {
         throw 'Cart Empty';
       }
 
-      const totalPrice = cartItem.reduce((prev: number, item: CartItem) => (prev + Number(item.detail?.price)), 0)
+      const totalPrice = cartItem.reduce((prev: number, item: CartItem) => {
+        const price = Number(item.detail?.price);
+        const qty = Number(item.qty)
+        return prev + (price * qty);
+      }, 0)
       const orderInfoCmd = new OrderInfoCommand()
       const addInfoCommand = orderInfoCmd.add(userId, totalPrice);
 
@@ -70,7 +74,11 @@ export class OrderEntity {
 
         const queryCmd = orderItemCmd.listQuery(orderInfo.orderId || '');
         const response = await dynamoDB.send(new QueryCommand(queryCmd));
-        orderInfo.menuItems = (response.Items || []).map((item: any) => menuCmd.getObjectFromAttributeMap(item.DETAIL.M));
+        orderInfo.items = (response.Items || []).map((item: any) => {
+          const orderItem:OrderItem = orderItemCmd.getObjectFromAttributeMap(item);
+          orderItem.detail = menuCmd.getObjectFromAttributeMap(orderItem.detail);
+          return orderItem;
+        });
 
         return orderInfo;
       })

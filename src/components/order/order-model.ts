@@ -9,7 +9,7 @@ export interface OrderInfo {
   status:string;
   createdAt:string;
   totalPrice:number
-  menuItems?:MenuItem[];
+  items?:OrderItem[];
 }
 export interface OrderItem {
   qty:number;
